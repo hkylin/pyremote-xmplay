@@ -10,7 +10,7 @@ import socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 ip = str(input("Insert the IP address of the server: "))
-port = str(input("Input the port: "))
+port = int(input("Input the port: "))
 
 data = ""
 

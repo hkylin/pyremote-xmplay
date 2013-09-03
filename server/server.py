@@ -64,7 +64,7 @@ class Server(threading.Thread):
         threading.Thread.__init__(self)
         self.id = id
         self.server = MyTcpServer(params,TcpHandler)
-        self.conf_server()
+        
         
     def conf_server(self):
         self.server.add_dde_client(DdeExecute("xmplay","system"))
@@ -75,7 +75,7 @@ class Server(threading.Thread):
         self.server.add_commands("prev","key129")
         
     def run(self):        
-
+        self.conf_server()
         self.server.serve_forever()
     
     def stop_server(self):
