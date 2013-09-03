@@ -5,25 +5,52 @@ Created on Mon Sep  2 21:37:26 2013
 @Author: Daddiego Lucas
 """
 import socket
+import sys
+import os
 
-# Create a socket (SOCK_STREAM means a TCP socket)
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-ip = str(input("Insert the IP address of the server: "))
-port = int(input("Input the port: "))
+def clear_screen():
+    if ( os.name=="nt"):
+        cmd="cls"
+    else:
+        cmd="clear"
+    os.system(cmd)
 
-data = ""
+def main():
+    
+    # Create a socket (SOCK_STREAM means a TCP socket)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    print("XMPlay Remote Control Server")
+    print("")
+    ip = str(input("Insert the IP address of the server: "))
+    port = int(input("Insert the port: "))
+    clear_screen()
+    data = ""
+    message="Welcome."
+    while (data != "exit"):
+        try:
+            # Connect to server and send data    
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)        
+                print("XMPlay Remote Control Client Command Line")
+                print(message)
+                print("Avaiable Commands: ")
+                print("play,pause,stop,next,prev")
+                print("Type exit to quit.")
+                data = str(input("Type a command in lowercase and press enter: "))
+                
+                if (data.strip() != "exit"):
+                    sock.connect((ip, port))
+                    sock.sendall(bytes(data + "\n", "utf-8"))
+                    message= "Sent: {}".format(data)
+                    clear_screen()
+                    
+        except:
+            print("Error: ",sys.exc_info()[0])    
+            input("Press enter to continue.")
+            break
+        
+        finally:
+            sock.close()
 
-while (data != "exit"):
-    try:
-        # Connect to server and send data    
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)        
-            sock.connect((ip, port))
-            data = str(input("Write some text, exit to quit: "))
-            if (data != "exit"):
-                sock.sendall(bytes(data + "\n", "utf-8"))
-                print("Sent:     {}".format(data))
-            
-    finally:
-        sock.close()
-        del sock
+if (__name__ == "__main__"):
+    main()

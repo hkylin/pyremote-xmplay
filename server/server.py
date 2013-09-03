@@ -8,10 +8,9 @@ Created on Mon Sep  2 21:36:42 2013
 """
 Imports
 """
-import socketserver
-import threading
-import win32ui
-import dde
+import socketserver, threading
+import win32ui, dde
+
 """
 Classes
 """
@@ -26,26 +25,29 @@ class DdeExecute():
     def _setup_dde(self):
         self.serv = dde.CreateServer()
         self.serv.Create("TC")
-        self.conversation = dde.CreateConversation(self.serv)
-        self.conversation.ConnectTo(self.app,self.topic)
+        try:
+            self.conversation = dde.CreateConversation(self.serv)
+            self.conversation.ConnectTo(self.app,self.topic)
+        except:
+            print("Cannot connect to XMPlay")
         
     def exec_command(self,command):
-        print(command)
-        self.conversation.Exec(command)
+        try:
+            self.conversation.Exec(command)
+        except:
+            print("Cannot exec the command")
         
 
 class TcpHandler(socketserver.StreamRequestHandler):      
+    
     def handle(self):
         data = self.rfile.readline().strip()
-        print("Server Says: {} send:".format(self.client_address[0]))
         #data consists of b'data_readed'
         data = str(data)[2:-1] #in this line, i remove the b''
-        print(data)
-        print("Press enter key to see the menu again.")
         self.server.exec_command(data)
         
 class MyTcpServer(socketserver.TCPServer):
-    
+
     def __init__(self, ip_port, RequestHandlerClass):
         socketserver.TCPServer.__init__(self, ip_port, RequestHandlerClass)
         self.commands = {}
@@ -55,16 +57,20 @@ class MyTcpServer(socketserver.TCPServer):
         
     def add_commands(self,data,command):
         self.commands[data] = command
+        
             
     def exec_command(self,data):
-        self.dde_client.exec_command(self.commands[data])
+        try:
+            self.dde_client.exec_command(self.commands[data])
+        except:
+            print("Command not loaded")
 
 class Server(threading.Thread):
+    
     def __init__(self, id,params=("0.0.0.0",9999)):
         threading.Thread.__init__(self)
         self.id = id
         self.server = MyTcpServer(params,TcpHandler)
-        
         
     def conf_server(self):
         self.server.add_dde_client(DdeExecute("xmplay","system"))
