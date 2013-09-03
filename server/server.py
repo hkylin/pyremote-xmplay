@@ -8,17 +8,14 @@ Created on Mon Sep  2 21:36:42 2013
 """
 Imports
 """
-import sys
 import socketserver
 import threading
-
-
+import win32ui
+import dde
 """
 Classes
 """
 class DdeExecute():
-    import win32ui
-    import dde
     
     def __init__(self,app,topic):
         self.conversation = None
@@ -27,27 +24,27 @@ class DdeExecute():
         self._setup_dde()     
     
     def _setup_dde(self):
-        serv = self.dde.CreateServer()
-        serv.Create("TC")
-        self.conversation = self.dde.CreateConversation(serv)
+        self.serv = dde.CreateServer()
+        self.serv.Create("TC")
+        self.conversation = dde.CreateConversation(self.serv)
         self.conversation.ConnectTo(self.app,self.topic)
         
     def exec_command(self,command):
         print(command)
         self.conversation.Exec(command)
+        
 
 class TcpHandler(socketserver.StreamRequestHandler):      
-		
     def handle(self):
-        # self.rfile is a file-like object created by the handler;
-        # we can now use e.g. readline() instead of raw recv() calls
         data = self.rfile.readline().strip()
-        print("Server Says: {} wrote:".format(self.client_address[0]))
-        data = str(data)[2:-1]
-        print(str(data))
+        print("Server Says: {} send:".format(self.client_address[0]))
+        #data consists of b'data_readed'
+        data = str(data)[2:-1] #in this line, i remove the b''
+        print(data)
+        print("Press enter key to see the menu again.")
         self.server.exec_command(data)
         
-class MyServer(socketserver.TCPServer):
+class MyTcpServer(socketserver.TCPServer):
     
     def __init__(self, ip_port, RequestHandlerClass):
         socketserver.TCPServer.__init__(self, ip_port, RequestHandlerClass)
@@ -62,40 +59,26 @@ class MyServer(socketserver.TCPServer):
     def exec_command(self,data):
         self.dde_client.exec_command(self.commands[data])
 
-        
 class Server(threading.Thread):
-    def __init__(self, id):
+    def __init__(self, id,params=("0.0.0.0",9999)):
         threading.Thread.__init__(self)
         self.id = id
+        self.server = MyTcpServer(params,TcpHandler)
+        self.conf_server()
         
-    def run(self):
-        self.server = MyServer(("0.0.0.0",9999),TcpHandler)
-        self.server.add_commands("stop","key81")
-        self.server.add_commands("play","key80")
+    def conf_server(self):
         self.server.add_dde_client(DdeExecute("xmplay","system"))
+        self.server.add_commands("play","key80")
+        self.server.add_commands("pause","key80")
+        self.server.add_commands("stop","key81")
+        self.server.add_commands("next","key128")
+        self.server.add_commands("prev","key129")
+        
+    def run(self):        
+
         self.server.serve_forever()
     
     def stop_server(self):
+        self.server.dde_client.serv.Destroy()
         self.server.shutdown()
         self.server.server_close()
-        
-"""
-Helpers Functions
-"""
-
-
-def main():
-    threadServer = Server(1)
-    threadServer.start()
-    
-    while (input("Write exit to quit: ") != "exit"):
-        pass
-    
-    threadServer.stop_server()
-    sys.exit()
-    
-
-if __name__ == "__main__":
-    main()
-    
-  
