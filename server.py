@@ -12,54 +12,10 @@ import sys
 import socketserver
 import threading
 
+
 """
 Classes
 """
-class TcpHandler(socketserver.StreamRequestHandler):      
-
-    #def __init__(self):#,dde_client):
-        #self.commands = {"stop":"key81","play":"key80"}
-        #self.dde_client = dde_client
-     #   pass
-		
-    def handle(self):
-        # self.rfile is a file-like object created by the handler;
-        # we can now use e.g. readline() instead of raw recv() calls
-        self.data = self.rfile.readline().strip()
-        print("Server Says: {} wrote:".format(self.client_address[0]))
-        print(self.data)
-        self.prueba()
-        #self.exec_command(self.data)
-        # Likewise, self.wfile is a file-like object used to write back
-        # to the client
-        self.wfile.write(self.data.upper())
-		
-    def prueba(self):
-	    print("probando")
-        
-    #def exec_command(self,data):
-        #self.dde_client.exec_command(self.commands[data])
-        
-        
-class Server(threading.Thread):
-    def __init__(self, id, tcpHandler): #host="0.0.0.0",port=9999):
-        threading.Thread.__init__(self)
-        self.id = id
-        self.server = tcpHandler
-        #self._setup_server(host,port)
-        
-    #def _setup_server(self,host,port):
-        # Create the server.
-       # self.server = socketserver.TCPServer((host, port), TcpHandler)
-
-    def run(self):
-        self.server.serve_forever()
-    
-    def stop_server(self):
-        self.server.shutdown()
-        self.server.server_close()
-        
-        
 class DdeExecute():
     import win32ui
     import dde
@@ -77,27 +33,65 @@ class DdeExecute():
         self.conversation.ConnectTo(self.app,self.topic)
         
     def exec_command(self,command):
-        if (self.conversation == None):
-            self._setup_dde()
-        
+        print(command)
         self.conversation.Exec(command)
+
+class TcpHandler(socketserver.StreamRequestHandler):      
+		
+    def handle(self):
+        # self.rfile is a file-like object created by the handler;
+        # we can now use e.g. readline() instead of raw recv() calls
+        data = self.rfile.readline().strip()
+        print("Server Says: {} wrote:".format(self.client_address[0]))
+        data = str(data)[2:-1]
+        print(str(data))
+        self.server.exec_command(data)
+        
+class MyServer(socketserver.TCPServer):
+    
+    def __init__(self, ip_port, RequestHandlerClass):
+        socketserver.TCPServer.__init__(self, ip_port, RequestHandlerClass)
+        self.commands = {}
+        
+    def add_dde_client(self, dde_client):
+        self.dde_client = dde_client
+        
+    def add_commands(self,data,command):
+        self.commands[data] = command
+            
+    def exec_command(self,data):
+        self.dde_client.exec_command(self.commands[data])
+
+        
+class Server(threading.Thread):
+    def __init__(self, id):
+        threading.Thread.__init__(self)
+        self.id = id
+        
+    def run(self):
+        self.server = MyServer(("0.0.0.0",9999),TcpHandler)
+        self.server.add_commands("stop","key81")
+        self.server.add_commands("play","key80")
+        self.server.add_dde_client(DdeExecute("xmplay","system"))
+        self.server.serve_forever()
+    
+    def stop_server(self):
+        self.server.shutdown()
+        self.server.server_close()
         
 """
 Helpers Functions
 """
 
-def main():
 
-    dde_client = DdeExecute("XMPLAY","SYSTEM")
-    tcpHandler = socketserver.TCPServer(("0.0.0.0",9999),TcpHandler)    
-    server = Server(1,tcpHandler)
-    server.daemon = True
-    server.start()
+def main():
+    threadServer = Server(1)
+    threadServer.start()
     
     while (input("Write exit to quit: ") != "exit"):
         pass
     
-    server.stop_server()
+    threadServer.stop_server()
     sys.exit()
     
 
