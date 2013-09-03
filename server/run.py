@@ -1,3 +1,7 @@
+"""
+@Author: Daddiego Lucs
+
+"""
 import sys
 from server import Server
 
