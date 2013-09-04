@@ -8,6 +8,7 @@ Created on Mon Sep  2 21:36:42 2013
 """
 Imports
 """
+
 import socketserver, threading
 import win32gui,win32ui, dde
 import time
@@ -132,3 +133,7 @@ class Titles():
             if (item.startswith("XMPlay")):
                 title = (item[9:])
         return title
+
+if __name__=="__main__":
+    import run
+    run.main()

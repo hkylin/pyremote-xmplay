@@ -20,7 +20,7 @@ def main():
     
     # Create a socket (SOCK_STREAM means a TCP socket)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    print("XMPlay Remote Control Server")
+    print("XMPlay PyRemote Control Client")
     print("")
     ip = str(input("Insert the IP address of the server: "))
     port = int(input("Insert the port: "))
@@ -32,7 +32,7 @@ def main():
         try:
             # Connect to server and send data    
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)        
-                print("XMPlay Remote Control Client Command Line")
+                print("XMPlay PyRemote Control Client")
                 print("************ Info Window ************")
                 print("")
                 print("Message from the server: " + message)

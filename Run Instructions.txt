@@ -1,0 +1,5 @@
+Basically, copy the folder named "server" in the pc that is running XMPlay, and execute "run.py". Write the requested info (listen ip and port), and the server should be running.
+
+Then, in the pc that you want to use as a "remote control", copy the folder named "client", and execute "client.py". Again, write the requested info (server ip and port), and you are done. Then start to type commands!
+
+Enjoy!
