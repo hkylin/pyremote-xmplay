@@ -26,22 +26,31 @@ def main():
     port = int(input("Insert the port: "))
     clear_screen()
     data = ""
-    message="Welcome."
+    message="No command executed."
+    song_title="Write some command."
     while (data != "exit"):
         try:
             # Connect to server and send data    
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)        
                 print("XMPlay Remote Control Client Command Line")
-                print(message)
+                print("************ Info Window ************")
+                print("")
+                print("Message from the server: " + message)
+                print("Song title: " + song_title)
+                print("")
+                print("**************************************")
+                print("")
                 print("Avaiable Commands: ")
-                print("play,pause,stop,next,prev")
+                print("play,pause,stop,next,prev,update")
                 print("Type exit to quit.")
                 data = str(input("Type a command in lowercase and press enter: "))
                 
                 if (data.strip() != "exit"):
                     sock.connect((ip, port))
                     sock.sendall(bytes(data + "\n", "utf-8"))
-                    message= "Sent: {}".format(data)
+                    received = str(sock.recv(1024), "utf-8").partition("|")
+                    message=received[0]
+                    song_title=received[2]
                     clear_screen()
                     
         except:

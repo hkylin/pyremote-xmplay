@@ -9,7 +9,8 @@ Created on Mon Sep  2 21:36:42 2013
 Imports
 """
 import socketserver, threading
-import win32ui, dde
+import win32gui,win32ui, dde
+import time
 
 """
 Classes
@@ -34,17 +35,29 @@ class DdeExecute():
     def exec_command(self,command):
         try:
             self.conversation.Exec(command)
+            return "Sucessfull!"
         except:
-            print("Cannot exec the command")
+            return "Cannot exec the command"
         
 
 class TcpHandler(socketserver.StreamRequestHandler):      
     
     def handle(self):
-        data = self.rfile.readline().strip()
+        command = self.rfile.readline().strip()
         #data consists of b'data_readed'
-        data = str(data)[2:-1] #in this line, i remove the b''
-        self.server.exec_command(data)
+        command = command.decode()
+        msg1 = self.execute(command)
+        time.sleep(1)
+        msg2 = self.title()
+        msg = msg1 + "|" + msg2
+        self.wfile.write(msg.encode())
+        
+    def execute(self,data):
+        return self.server.exec_command(data)
+    
+    def title(self):
+        return self.server.get_song_title()
+        
         
 class MyTcpServer(socketserver.TCPServer):
 
@@ -55,15 +68,26 @@ class MyTcpServer(socketserver.TCPServer):
     def add_dde_client(self, dde_client):
         self.dde_client = dde_client
         
+    def add_title_finder(self,title_finder):
+        self.title_finder = title_finder
+        
     def add_commands(self,data,command):
         self.commands[data] = command
         
-            
+    def get_song_title(self):
+        try:
+            return self.title_finder.get_current_song_title()
+        except:
+            return "Could not retrieve the song title"
+             
     def exec_command(self,data):
         try:
-            self.dde_client.exec_command(self.commands[data])
+            if (data.startswith("update")):
+                return "Succesful!"
+            else:
+                return self.dde_client.exec_command(self.commands[data])
         except:
-            print("Command not loaded")
+            return "Command not loaded"             
 
 class Server(threading.Thread):
     
@@ -73,6 +97,7 @@ class Server(threading.Thread):
         self.server = MyTcpServer(params,TcpHandler)
         
     def conf_server(self):
+        self.server.add_title_finder(Titles())
         self.server.add_dde_client(DdeExecute("xmplay","system"))
         self.server.add_commands("play","key80")
         self.server.add_commands("pause","key80")
@@ -88,3 +113,22 @@ class Server(threading.Thread):
         self.server.dde_client.serv.Destroy()
         self.server.shutdown()
         self.server.server_close()
+        
+class Titles():
+    
+    def __init__(self):
+        self.windows = []
+
+    def _win_enum_handler(self,hwnd,ctx):
+        if win32gui.IsWindowVisible(hwnd):
+            self.windows.append(win32gui.GetWindowText(hwnd))
+            
+    def _load_titles(self):
+        win32gui.EnumWindows(self._win_enum_handler,None)
+
+    def get_current_song_title(self):       
+        self._load_titles()
+        for item in self.windows:
+            if (item.startswith("XMPlay")):
+                title = (item[9:])
+        return title
