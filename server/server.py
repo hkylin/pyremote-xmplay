@@ -5,14 +5,16 @@ Created on Mon Sep  2 21:36:42 2013
 @Author: Daddiego Lucas
 """
 
+#It's up there so no library is imported if not windows.
+if __name__=="__main__":
+    import run
+    run.main()
 """
 Imports
 """
-
 import socketserver, threading
-import win32gui,win32ui, dde
+import win32gui,win32ui, dde #dde library needs win32ui
 import time
-
 """
 Classes
 """
@@ -133,7 +135,3 @@ class Titles():
             if (item.startswith("XMPlay")):
                 title = (item[9:])
         return title
-
-if __name__=="__main__":
-    import run
-    run.main()

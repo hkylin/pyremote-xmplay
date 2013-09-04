@@ -4,10 +4,7 @@
 Created on Mon Sep  2 21:37:26 2013
 @Author: Daddiego Lucas
 """
-import socket
-import sys
-import os
-
+import socket,sys,os
 
 def clear_screen():
     if ( os.name=="nt"):

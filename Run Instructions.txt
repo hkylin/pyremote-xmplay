@@ -2,4 +2,13 @@ Basically, copy the folder named "server" in the pc that is running XMPlay, and 
 
 Then, in the pc that you want to use as a "remote control", copy the folder named "client", and execute "client.py". Again, write the requested info (server ip and port), and you are done. Then start to type commands!
 
+Note: the server is capable of find the title of the song if, and only if, the title of the window of the player starts with "XMPlay".
+XMPlay has an option to do that. If you don't find it, go to the folder where the executable is, and search the file "xmplay.ini". Search this line:
+TitleForm=%?2{%2 - }%?1{%1|%0}
+and replace only that line with the next one:
+TitleForm=XMPlay - %?2{%2 - }%?1{%1|%0}
+
+And then, you are done.
+This is because i didn't have other choice to take the name of the song.
+
 Enjoy!

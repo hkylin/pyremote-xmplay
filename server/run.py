@@ -6,11 +6,14 @@
 """
 import sys,os
 
-def main():
+def check_os():
     if (os.name != "nt"):
         print("Sorry, this server only works in Windows")
         sys.exit()
+    
 
+def main():
+    check_os()    
     from server import Server
     print("XMPlay Remote Control Server")
     print("")
@@ -35,5 +38,6 @@ def main():
     threadServer.stop_server()
     sys.exit()
 
+#It's down there because main has to be defined before.
 if (__name__ == "__main__"):
     main()
