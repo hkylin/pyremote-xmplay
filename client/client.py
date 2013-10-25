@@ -14,9 +14,7 @@ def clear_screen():
     os.system(cmd)
 
 def main():
-    
-    # Create a socket (SOCK_STREAM means a TCP socket)
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
     print("XMPlay PyRemote Control Client")
     print("")
     ip = str(input("Insert the IP address of the server: "))
@@ -27,7 +25,8 @@ def main():
     song_title="Write some command."
     while (data != "exit"):
         try:
-            # Connect to server and send data    
+            # Connect to server and send data
+            # Create a socket (SOCK_STREAM means a TCP socket)
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)        
                 print("XMPlay PyRemote Control Client")
                 print("************ Info Window ************")
